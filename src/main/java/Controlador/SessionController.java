@@ -45,7 +45,6 @@ public class SessionController {
     }
 
     public boolean usuarioExiste(String username) {
-        // Delega la búsqueda a la lista global.
         return VentanaLogin.USUARIOS.stream()
                 .anyMatch(u -> u.getUsername().equals(username));
     }

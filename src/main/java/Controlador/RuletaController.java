@@ -16,6 +16,14 @@ public class RuletaController {
             throw new IllegalStateException("No hay sesión de usuario activa.");
         }
 
+        if (apuesta == null) {
+            throw new IllegalArgumentException("Apuesta requerida.");
+        }
+
+        if (usuario.getSaldo() < apuesta.getMonto()) {
+            throw new IllegalStateException("Saldo insuficiente.");
+        }
+
         int numeroGanador = ruleta.girar();
         String colorGanador = Ruleta.getColor(numeroGanador);
 
