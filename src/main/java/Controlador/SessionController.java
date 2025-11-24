@@ -34,6 +34,9 @@ public class SessionController {
     }
 
     public Usuario autenticarYIniciarSesion(String username, String password) {
+        if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre de usuario no puede ser nulo o vacío.");
+        }
 
         Usuario usuario = VentanaLogin.USUARIOS.stream()
                 .filter(u -> u.validarCredenciales(username, password))
@@ -54,6 +57,9 @@ public class SessionController {
     }
 
     public Usuario registrarNuevoUsuario(String username, String password, String nombre) {
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre de usuario no puede ser nulo o vacío.");
+        }
 
         if (usuarioExiste(username)) {
             throw new IllegalStateException("Ese nombre de usuario ya existe, intente con otro.");
