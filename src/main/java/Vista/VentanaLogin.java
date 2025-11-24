@@ -12,7 +12,6 @@ public class VentanaLogin {
 
     private static final String ARCHIVO_USUARIOS = "usuarios.dat";
 
-    // Cargar lista persistente al inicio
     public static final List<Usuario> USUARIOS =
             GestorPersistencia.cargarDatos(ARCHIVO_USUARIOS);
 

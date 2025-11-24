@@ -25,6 +25,10 @@ public class SessionController {
         this.usuarioActual = usuario;
     }
 
+    public void cerrarSesion() {
+        this.usuarioActual = null;
+    }
+
     public Usuario getUsuarioActual() {
         return usuarioActual;
     }

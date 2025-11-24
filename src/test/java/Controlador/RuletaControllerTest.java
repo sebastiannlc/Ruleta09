@@ -27,43 +27,29 @@ public class RuletaControllerTest {
 
     @BeforeEach
     void setUp() {
-        // 1. CONFIGURACIÓN DEL REPOSITORIO GLOBAL (Evita el error de inicialización)
-        // Usamos RepositorioEnMemoria para que las pruebas sean independientes del disco.
+        // 1. CONFIGURACIÓN DEL REPOSITORIO GLOBAL
         IRepositorioResultados repoPrueba = new RepositorioEnMemoria();
-        // NOTA: El constructor de ResultadoController DEBE aceptar IRepositorioResultados (revisar si es necesario modificarlo)
-        // Si tienes un constructor que no recibe parámetros, la inicialización puede fallar.
-        // Asumiendo que existe un constructor que permite inyectar el repositorio para pruebas:
         new ResultadoController(repoPrueba, repoPrueba);
 
-        // 2. Inicializar el controlador de Ruleta
         ruletaController = new RuletaController();
 
-        // 3. Configurar usuario y sesión
         saldoInicial = 100.0;
-        // NOTA: El constructor de Usuario YA incluye la validación de saldo negativo (Caso #1)
         usuarioPrueba = new Usuario("testUser", "pass", "Test", saldoInicial);
-        // La sesión debe estar activa para que jugarRonda no falle
         SessionController.getInstancia().iniciarSesion(usuarioPrueba);
     }
 
-    // --------------------------------------------------------------------------
-    // PRUEBAS DE EXCEPCIONES (Reglas de Dominio)
-    // --------------------------------------------------------------------------
-
     /**
-     * Corresponde al Caso de Prueba #3: Apuesta nula es rechazada.
+     * Apuesta nula es rechazada.
      * Resultado esperado: IllegalArgumentException con mensaje "Apuesta requerida.".
      */
     @Test
     void jugarRonda_ApuestaNula_LanzaIllegalArgumentException() {
-        // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             ruletaController.jugarRonda(null);
         }, "Debe lanzar IllegalArgumentException si la apuesta es null.");
 
         assertEquals("Apuesta requerida.", exception.getMessage(), "El mensaje de error debe ser específico.");
 
-        // Verificamos que no se haya registrado ningún resultado
         assertEquals(0, usuarioPrueba.getHistorialPersonal().size(), "No se debe registrar ninguna actividad.");
     }
 
@@ -73,27 +59,19 @@ public class RuletaControllerTest {
      */
     @Test
     void jugarRonda_SaldoInsuficiente_LanzaIllegalStateException() {
-        // Arrange
-        // Apuesta de $100.01 contra un saldo de $100.0
         ApuestaBase apuestaInvalida = new ApuestaRojo(100.01);
 
-        // Act & Assert
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
             ruletaController.jugarRonda(apuestaInvalida);
         }, "Debe lanzar IllegalStateException al apostar más del saldo.");
 
         assertEquals("Saldo insuficiente.", exception.getMessage(), "El mensaje de error debe ser específico.");
 
-        // Verificamos que el saldo no haya cambiado
         assertEquals(saldoInicial, usuarioPrueba.getSaldo(), 0.001, "El saldo no debe alterarse tras la excepción.");
     }
 
-    // --------------------------------------------------------------------------
-    // PRUEBA DE FLUJO NORMAL
-    // --------------------------------------------------------------------------
-
     /**
-     * Prueba el flujo exitoso: el saldo se actualiza y el resultado se registra.
+     * El saldo se actualiza y el resultado se registra.
      * CUMPLIMIENTO: Verifica la ejecución del juego sin errores.
      */
     @Test
@@ -102,17 +80,13 @@ public class RuletaControllerTest {
         double montoApuesta = 10.0;
         ApuestaBase apuestaValida = new ApuestaRojo(montoApuesta);
 
-        // Act
         Resultado resultado = ruletaController.jugarRonda(apuestaValida);
 
-        // Assert
         double saldoFinal = usuarioPrueba.getSaldo();
 
-        // El saldo final debe estar en el rango [90.0 (pérdida), 110.0 (ganancia)]
         assertTrue(saldoFinal >= saldoInicial - montoApuesta, "El saldo final debe ser mayor o igual al saldo inicial menos la apuesta.");
         assertTrue(saldoFinal <= saldoInicial + montoApuesta, "El saldo final debe ser menor o igual al saldo inicial más la ganancia máxima (1:1).");
 
-        // Verifica que se registró el resultado en el historial personal
         assertEquals(1, usuarioPrueba.getHistorialPersonal().size(), "Debe haber un resultado registrado.");
     }
 }
